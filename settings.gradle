@@ -1,1 +1,1 @@
-include ':app', ':wallpaperlib', ':matisse'
+include ':app', ':wallpaperlib'
