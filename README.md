@@ -61,7 +61,7 @@ public static void intent2SetWallPaper(Context context, String path) {
 ```
 
 为方便大家使用，封装到了github：
-https://github.com/SherlockGougou/WallpaperDemo
+https://github.com/SherlockGougou/SetWallpaper
 
 ## 使用方式：
 #### 1.添加依赖：
@@ -77,7 +77,7 @@ allprojects {
 ##### Step 2. 在你主module的build.gradle中添加依赖：
 ```
 dependencies {
-	 implementation 'com.github.SherlockGougou:WallpaperDemo:v1.2.0'
+	 implementation 'com.github.SherlockGougou:SetWallpaper:v1.2.0'
 }
 ```
 #### 2.调用代码：
