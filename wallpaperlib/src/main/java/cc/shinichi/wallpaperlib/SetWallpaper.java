@@ -4,8 +4,10 @@ import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import cc.shinichi.wallpaperlib.util.FileUtil;
 import cc.shinichi.wallpaperlib.util.ImageUtil;
@@ -67,8 +69,22 @@ public class SetWallpaper {
             }
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                context.startActivity(WallpaperManager.getInstance(context.getApplicationContext())
-                    .getCropAndSetWallpaperIntent(FileUtil.getUriWithPath(context, path, authority)));
+                try {
+                    intent =
+                        WallpaperManager.getInstance(context.getApplicationContext()).getCropAndSetWallpaperIntent(uriPath);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.getApplicationContext().startActivity(intent);
+                } catch (IllegalArgumentException e) {
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(context.getApplicationContext().getContentResolver(), uriPath);
+                        if (bitmap != null) {
+                            WallpaperManager.getInstance(context.getApplicationContext()).setBitmap(bitmap);
+                        }
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
             } else {
                 try {
                     WallpaperManager.getInstance(context.getApplicationContext())
