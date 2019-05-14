@@ -47,8 +47,22 @@ public static void intent2SetWallPaper(Context context, String path) {
         // 其他
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                context.startActivity(WallpaperManager.getInstance(context.getApplicationContext())
-                    .getCropAndSetWallpaperIntent(getUriWithPath(path)));
+                try {
+                    intent =
+                        WallpaperManager.getInstance(context.getApplicationContext()).getCropAndSetWallpaperIntent(uriPath);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.getApplicationContext().startActivity(intent);
+                } catch (IllegalArgumentException e) {
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(context.getApplicationContext().getContentResolver(), uriPath);
+                        if (bitmap != null) {
+                            WallpaperManager.getInstance(context.getApplicationContext()).setBitmap(bitmap);
+                        }
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
             } else {
                 try {
                     WallpaperManager.getInstance(context.getApplicationContext()).setBitmap(ImageUtil.getImageBitmap(path));
@@ -61,7 +75,7 @@ public static void intent2SetWallPaper(Context context, String path) {
 ```
 
 为方便大家使用，封装到了github：
-https://github.com/SherlockGougou/WallpaperDemo
+https://github.com/SherlockGougou/SetWallpaper
 
 ## 使用方式：
 #### 1.添加依赖：
@@ -77,7 +91,7 @@ allprojects {
 ##### Step 2. 在你主module的build.gradle中添加依赖：
 ```
 dependencies {
-	 implementation 'com.github.SherlockGougou:WallpaperDemo:v1.2.0'
+	 implementation 'com.github.SherlockGougou:SetWallpaper:v1.3.0'
 }
 ```
 #### 2.调用代码：
