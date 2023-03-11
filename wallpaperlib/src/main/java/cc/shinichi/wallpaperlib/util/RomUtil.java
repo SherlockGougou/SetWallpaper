@@ -3,12 +3,15 @@ package cc.shinichi.wallpaperlib.util;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 /**
  * @author 工藤
@@ -69,21 +72,29 @@ public class RomUtil {
     }
 
     /**
-     * 判断是否为Flyme系统
+     * 判断是否是vivo系统
      */
-    public static boolean isFlymeRom(Context context) {
-        Object obj = isInstalledByPkgName(context, "com.meizu.flyme.update") ? Log.d(TAG, "isFlymeRom: true")
-            : Log.d(TAG, "isFlymeRom: false");
-        return isInstalledByPkgName(context, "com.meizu.flyme.update");
+    public static boolean isVivoRom() {
+        String brand = Build.BRAND;
+        if (brand.toLowerCase(Locale.ROOT).contains("vivo")) {
+            Log.d(TAG, "isVivoRom: true");
+            return true;
+        }
+        Log.d(TAG, "isVivoRom: false");
+        return false;
     }
 
     /**
-     * 判断是否是Smartisan系统
+     * 判断是否是oppo系统
      */
-    public static boolean isSmartisanRom(Context context) {
-        Object obj = isInstalledByPkgName(context, "com.smartisanos.security") ? Log.d(TAG, "isSmartisanRom: true")
-            : Log.d(TAG, "isSmartisanRom: false");
-        return isInstalledByPkgName(context, "com.smartisanos.security");
+    public static boolean isOppoRom() {
+        String brand = Build.BRAND;
+        if (brand.toLowerCase(Locale.ROOT).contains("oppo")) {
+            Log.d(TAG, "isOppoRom: true");
+            return true;
+        }
+        Log.d(TAG, "isOppoRom: false");
+        return false;
     }
 
     /**

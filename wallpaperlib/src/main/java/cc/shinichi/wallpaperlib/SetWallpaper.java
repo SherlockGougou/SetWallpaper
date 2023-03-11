@@ -6,13 +6,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
-import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.Locale;
+
 import cc.shinichi.wallpaperlib.util.FileUtil;
 import cc.shinichi.wallpaperlib.util.ImageUtil;
 import cc.shinichi.wallpaperlib.util.RomUtil;
-import java.io.IOException;
 
 /**
  * @author 工藤
@@ -23,76 +26,95 @@ import java.io.IOException;
  */
 public class SetWallpaper {
 
-    public static void setWallpaper(Context context, String path, String authority) {
-        if (context == null || TextUtils.isEmpty(path) || TextUtils.isEmpty(authority)) {
+    public static void setWallpaper(Context context, String imageFilePath, String authority) {
+        if (context == null || imageFilePath == null) {
             return;
         }
-        Uri uriPath = FileUtil.getUriWithPath(context, path, authority);
+        Log.d("SetWallpaper", "setWallpaper: imageFilePath = " + imageFilePath);
+        Uri uriPath;
+        if (imageFilePath.toLowerCase(Locale.ROOT).startsWith("content:")) {
+            uriPath = Uri.parse(imageFilePath);
+        } else if (imageFilePath.toLowerCase(Locale.ROOT).startsWith("file:")) {
+            uriPath = FileUtil.getUriWithPath(context, imageFilePath, authority);
+        } else {
+            uriPath = ImageUtil.getImageContentUri(context, new File(imageFilePath));
+        }
+        Log.d("SetWallpaper", "setWallpaper: uriPath = " + uriPath);
         Intent intent;
         if (RomUtil.isHuaweiRom()) {
             try {
-                ComponentName componentName =
-                    new ComponentName("com.android.gallery3d", "com.android.gallery3d.app.Wallpaper");
+                ComponentName componentName = new ComponentName("com.android.gallery3d", "com.android.gallery3d.app.Wallpaper");
                 intent = new Intent(Intent.ACTION_VIEW);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setDataAndType(uriPath, "image/*");
                 intent.putExtra("mimeType", "image/*");
                 intent.setComponent(componentName);
                 context.startActivity(intent);
             } catch (Exception e) {
                 e.printStackTrace();
-                try {
-                    WallpaperManager.getInstance(context.getApplicationContext())
-                        .setBitmap(ImageUtil.getImageBitmap(path));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                defaultWay(context, uriPath);
             }
         } else if (RomUtil.isMiuiRom()) {
             try {
-                ComponentName componentName = new ComponentName("com.android.thememanager",
-                    "com.android.thememanager.activity.WallpaperDetailActivity");
+                ComponentName componentName = new ComponentName("com.android.thememanager", "com.android.thememanager.activity.WallpaperDetailActivity");
                 intent = new Intent("miui.intent.action.START_WALLPAPER_DETAIL");
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setDataAndType(uriPath, "image/*");
                 intent.putExtra("mimeType", "image/*");
                 intent.setComponent(componentName);
                 context.startActivity(intent);
             } catch (Exception e) {
                 e.printStackTrace();
-                try {
-                    WallpaperManager.getInstance(context.getApplicationContext())
-                        .setBitmap(ImageUtil.getImageBitmap(path));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                defaultWay(context, uriPath);
+            }
+        } else if (RomUtil.isOppoRom()) {
+            try {
+                ComponentName componentName = new ComponentName("com.oplus.wallpapers", "com.oplus.wallpapers.wallpaperpreview.PreviewStatementActivity");
+                intent = new Intent("miui.intent.action.START_WALLPAPER_DETAIL");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setDataAndType(uriPath, "image/*");
+                intent.putExtra("mimeType", "image/*");
+                intent.setComponent(componentName);
+                context.startActivity(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+                defaultWay(context, uriPath);
+            }
+        } else if (RomUtil.isVivoRom()) {
+            try {
+                ComponentName componentName = new ComponentName("com.vivo.gallery", "com.android.gallery3d.app.Wallpaper");
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setDataAndType(uriPath, "image/*");
+                intent.putExtra("mimeType", "image/*");
+                intent.setComponent(componentName);
+                context.startActivity(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+                defaultWay(context, uriPath);
             }
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                try {
-                    intent =
-                        WallpaperManager.getInstance(context.getApplicationContext()).getCropAndSetWallpaperIntent(uriPath);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.getApplicationContext().startActivity(intent);
-                } catch (IllegalArgumentException e) {
-                    Bitmap bitmap = null;
-                    try {
-                        bitmap = MediaStore.Images.Media.getBitmap(context.getApplicationContext().getContentResolver(), uriPath);
-                        if (bitmap != null) {
-                            WallpaperManager.getInstance(context.getApplicationContext()).setBitmap(bitmap);
-                        }
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            } else {
-                try {
-                    WallpaperManager.getInstance(context.getApplicationContext())
-                        .setBitmap(ImageUtil.getImageBitmap(path));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+            try {
+                intent = WallpaperManager.getInstance(context.getApplicationContext()).getCropAndSetWallpaperIntent(uriPath);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.getApplicationContext().startActivity(intent);
+            } catch (Exception e) {
+                e.printStackTrace();
+                defaultWay(context, uriPath);
             }
+        }
+    }
+
+    private static void defaultWay(Context context, Uri uri) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(context.getApplicationContext().getContentResolver(), uri);
+            if (bitmap != null) {
+                WallpaperManager.getInstance(context.getApplicationContext()).setBitmap(bitmap);
+                Toast.makeText(context, "设置成功", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
