@@ -19,7 +19,6 @@ import cc.shinichi.wallpaperlib.util.RomUtil;
 
 /**
  * @author 工藤
- * @email gougou@16fan.com
  * cc.shinichi.wallpaperlib
  * create at 2018/12/27  16:36
  * description:

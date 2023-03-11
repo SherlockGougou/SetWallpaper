@@ -15,7 +15,6 @@ import java.util.Locale;
 
 /**
  * @author 工藤
- * @email gougou@16fan.com
  * cc.shinichi.library.tool.utility.device
  * create at 2018/12/24  11:54
  * description:

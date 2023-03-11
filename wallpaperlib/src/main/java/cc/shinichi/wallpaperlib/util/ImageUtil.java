@@ -11,7 +11,6 @@ import java.io.File;
 
 /**
  * @author 工藤
- * @email gougou@16fan.com
  * cc.shinichi.wallpaperlib.util
  * create at 2018/12/27  16:38
  * description:
